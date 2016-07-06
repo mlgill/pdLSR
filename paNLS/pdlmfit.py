@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from six import string_types
 
 from .fitting import get_fits, convert_param_dict_to_df, convert_param_df_to_expanded_list, get_confidence_interval, predict
 from .aggregation import get_results, get_data, get_stats
@@ -11,8 +12,9 @@ class pdlmfit(object):
                  xname=None, yname=None, yerr=None, 
                  method='leastsq', sigma=0.95, threads=None):
 
-        if (groupcols is not None) & (not hasattr(groupcols, '__iter__')):
-            groupcols = [groupcols]
+        if groupcols is not None:
+            if ( (not hasattr(groupcols, '__iter__')) | isinstance(groupcols, string_types) ):
+                groupcols = [groupcols]
 
         self._input_data = data
         self._func = func
@@ -25,7 +27,11 @@ class pdlmfit(object):
         self._sigma = sigma
         self._threads = threads
 
-        self._index = data[groupcols + [xname]].groupby(groupcols).max().index        
+        self._index = ( data[groupcols + [xname]]
+                        .groupby(groupcols)
+                        .max()
+                        .index
+                       )
         self._ngroups = self._index.shape[0]
 
         return

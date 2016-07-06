@@ -135,7 +135,7 @@ def get_confidence_interval(fit_data, sigma, threads=None):
         threads = multiprocessing.cpu_count()
 
     # Try to use parallelized version first, switch to unparallelized if error occurs
-    # Only select portions of fit data that have more than two parameters
+    # Only select portions of fit data that have two or more parameters
 
     fd_noidx = fit_data.copy().reset_index()
     try:

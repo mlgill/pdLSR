@@ -77,6 +77,7 @@ def get_stats(fit_data, output_data):
     stats['bic'] = fit_data.fitobj.apply(lambda x: x.bic)
     stats['rss'] = output_data.residual.groupby(output_data.index).apply(lambda x: np.sum(x**2))
 
+    # TODO: return this as a separate dataframe with an additional index
     stats['covar'] = [x[1].covar for x in fit_data.fitobj.iteritems()]
     
     return stats
