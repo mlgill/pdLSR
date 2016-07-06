@@ -57,54 +57,48 @@ def get_fits(data, func, groupcols, params,
 
 
 def convert_param_dict_to_df(params, ngroups, index):
+    ### CLEAN ###
 
     # Unique list of variable names
-    var_names = [x['name'] for x in params]
+    var_names = map(lambda x: x['name'], params)
 
     # Expanded list of names and all properties to create a 
     # multi-level column index
-    name_list = [x['name'] for x in params for y in range(len(x))]
-    prop_list = [key for x in params for key in x.keys()]
-    column_index = pd.MultiIndex.from_arrays([name_list, prop_list], sortorder=None)
+    column_list = [(x['name'], y) 
+                   for x in params 
+                       for y in x.keys()
+                  ]
+
+    column_index = pd.MultiIndex.from_tuples(column_list, 
+                                             sortorder=None)
 
     # Create a dataframe from the indexes and fill it
     param_df = pd.DataFrame(index=index, columns=column_index)
 
-    for name in enumerate(var_names):
-        for prop in prop_list:
-            param_column = params[name[0]][prop]
-
-            # Duplicate the parameter value in a full-length list if necessary
-            if (isinstance(param_column, dict) or 
-                (not hasattr(param_column, '__iter__'))):
-
-                param_column = [param_column] * ngroups
-
-            param_df[(name[1], prop)] = param_column
+    # Fill df by iterating over the parameter name index
+    # and then each of its keys
+    for var in enumerate(param_df.columns.levels[0]):
+        for key in param_df.loc[:,var[1]]:
+            param_df[(var[1],key)] = params[var[0]][key]
+            
+    param_df.fillna(method='ffill', inplace=True)
 
     return param_df
 
 
 
 def convert_param_df_to_expanded_list(param_df):
+    ### CLEAN ###
 
-    # Unique list of variable names
-    var_names = list(param_df.columns.levels[0])
+    # Convert each parameter entry to a list of dictionaries
+    list_of_dicts = [ [ param_df.loc[x,y].to_dict() 
+                        for y in param_df.columns.levels[0] ] 
+                      for x in param_df.index ]
 
-    # Convert each parameter entry to a dictionary
-    series_to_dict = [ [ row[1][row[1].index.get_loc(var)].to_dict() 
-                         for var in var_names ] 
-                      for row in param_df.iterrows() ]
-
-    # Remove the first part of the multi-index label from each dictionary key
-    short_dict_index = [ [ dict([(k[1], d[k]) for k in d.keys()]) 
-                           for d in row ] 
-                        for row in series_to_dict ]
-
-    # Convert each dictionary entry to a parameter
-    param_list = [ [ lmfit.Parameter(**d) 
-                     for d in row ] 
-                  for row in short_dict_index ]
+    # Convert the list of dictionaries to a list of lmfit parameters
+    param_list = [ [ lmfit.Parameter(**r) 
+                     for r in row ] 
+                  for row in list_of_dicts ]
 
     return param_list
 
