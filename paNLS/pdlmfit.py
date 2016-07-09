@@ -181,7 +181,7 @@ class pdlmfit(object):
             
         
         # The results
-        self.results = get_results(self._fitobj, self._paramnames)
+        self.results = get_results(self._fitobj, self._paramnames, self._sigma)
         
         # The remaining statistics
         self.stats = get_stats(self._fitobj.fitobj, self.stats)

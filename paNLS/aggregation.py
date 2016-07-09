@@ -1,8 +1,9 @@
 import pandas as pd
+import re
 
 
 # Create the results table
-def get_results(fitobj_df, params):
+def get_results(fitobj_df, params, sigma):
        
     # Get the parameters
     parameters = pd.concat( [fitobj_df.fitobj.apply(lambda x: pd.Series({'{}_value'.format(par_name):x.params[par_name].value, 
