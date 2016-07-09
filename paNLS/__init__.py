@@ -3,7 +3,6 @@ from .pdlmfit import pdlmfit
 
 # TODOs:
 # [ ] add docstrings
-# [ ] fix sigma so it's a list
 # [ ] check that groupcols are in the data, otherwise quit
 # [ ] check that xname/yname/yerr are in the data, otherwise quit
 # [ ] check that method is leastsq, otherwise quit

@@ -48,7 +48,7 @@ def get_confidence_interval(fitobj_df, mask, sigma, threads=None):
         ciobj = list()
         for m,f in zip(arr[:,0], arr[:,1]):
             try:
-                res = lmfit.conf_interval(m, f, sigmas=[sigma])
+                res = lmfit.conf_interval(m, f, sigmas=sigma)
             except:
                 res = np.NaN
 

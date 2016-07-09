@@ -12,12 +12,12 @@ def get_results(fitobj_df, params, sigma):
                                                 )
                             for par_name in params ], axis=1)
     
-    # Get the confidence intervals
+    # Get the confidence interval bound for each % ci entered
     mask = pd.notnull(fitobj_df.ciobj)
-    conf_intervals = pd.concat([fitobj_df.loc[mask, 'ciobj'].apply(lambda x: pd.Series({'{}_ci{:.2f}'.format(par_name, x[par_name][0][0]):
-                                                                                        x[par_name][0][1]}))
+    conf_intervals = pd.concat([fitobj_df.loc[mask, 'ciobj'].apply(lambda x: pd.Series({'{}_ci{:.2f}'.format(par_name, x[par_name][s][0]):
+                                                                                        x[par_name][s][1]}))
                                 for par_name in params 
-                                for s in [sigma]
+                                for s in range(len(sigma))
                                ], axis=1)
 
     # Combine results and fix column names

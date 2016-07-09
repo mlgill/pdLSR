@@ -55,7 +55,10 @@ class pdlmfit(object):
         self._method = method
         # TODO check that method is leastsq, otherwise quit
         
+        if not hasattr(sigma, '__iter__'):
+            sigma = [sigma]
         self._sigma = sigma
+        
         self._threads = threads
         
         # Dataframe to hold the fitting objects
