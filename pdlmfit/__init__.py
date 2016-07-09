@@ -9,3 +9,4 @@ from .pdlmfit import pdlmfit
 # [ ] search for NaNs in model column and fill
 # [ ] make unrecognized parameter format throw an error and quit
 # [ ] make the predict function work
+# [ ] compatibility with Python 3?
