@@ -1,28 +1,4 @@
 import pandas as pd
-import numpy as np
-
-
-# Function to expand arrays contained in a single dataframe row
-def expand_df(data, name, groupcols):
-    
-    if len(groupcols) == 1:
-        groupcols = groupcols[0]
-    
-    if isinstance(data, pd.DataFrame):
-        dfexpand = pd.concat([pd.Series(np.array(x[1].values[0]), 
-                                        index=pd.Index([x[0]]*len(x[1].values[0]), name=groupcols),
-                                        name=name) 
-                              for x in data.iterrows()], axis=0)
-    else:
-        dfexpand = pd.concat([pd.Series(np.array(x[1]),
-                                        index=pd.Index([x[0]]*len(x[1]), name=groupcols),
-                                        name=name) 
-                              for x in data.iteritems()], axis=0)
-        
-    if not(isinstance(dfexpand, pd.DataFrame)):
-        dfexpand = pd.DataFrame(dfexpand)
-        
-    return dfexpand
 
 
 # Loss function for error calculation
@@ -42,18 +18,87 @@ def error_function(par, func, xdata, ydata=None, yerr=None):
         return (ycalc - ydata)**2/yerr**2
 
 
-# Function to fix indexing for multiple groupcols
-def fix_index(data, fit_data, groupcols, name):
 
-    data.name = name
-    data = pd.DataFrame(data)
+def convert_param_dict_to_df(params, ngroups, index):
+    ### CLEAN ###
 
-    idx_data = fit_data.reset_index()[groupcols]
+    # Unique list of variable names
+    var_names = map(lambda x: x['name'], params)
 
-    for col in groupcols:
-        data[col] = idx_data[col]
+    # Expanded list of names and all properties to create a 
+    # multi-level column index
+    column_list = [(x['name'], y) 
+                   for x in params 
+                       for y in x.keys()
+                  ]
 
-    data.set_index(groupcols, inplace=True)
+    column_index = pd.MultiIndex.from_tuples(column_list, 
+                                             sortorder=None)
 
-    return data
+    # Create a dataframe from the indexes and fill it
+    params_df = pd.DataFrame(index=index, columns=column_index)
+
+    # Fill df by iterating over the parameter name index
+    # and then each of its keys
+    for var in enumerate(params_df.columns.levels[0]):
+        for key in params_df.loc[:,var[1]]:
+            params_df[(var[1],key)] = params[var[0]][key]
+
+    return params_df
+
+
+
+# def convert_param_df_to_expanded_list(param_df):
+#     ### CLEAN ###
+
+#     # Convert each parameter entry to a list of dictionaries
+#     list_of_dicts = [ [ param_df.loc[x,y].to_dict() 
+#                         for y in param_df.columns.levels[0] ] 
+#                       for x in param_df.index ]
+
+#     # Convert the list of dictionaries to a list of lmfit parameters
+#     param_list = [ [ lmfit.Parameter(**r) 
+#                      for r in row ] 
+#                   for row in list_of_dicts ]
+
+#     return param_list
+
+
+# # Function to fix indexing for multiple groupcols
+# def fix_index(data, fit_data, groupcols, name):
+
+#     data.name = name
+#     data = pd.DataFrame(data)
+
+#     idx_data = fit_data.reset_index()[groupcols]
+
+#     for col in groupcols:
+#         data[col] = idx_data[col]
+
+#     data.set_index(groupcols, inplace=True)
+
+#     return data
+
+
+# # Function to expand arrays contained in a single dataframe row
+# def expand_df(data, name, groupcols):
+    
+#     if len(groupcols) == 1:
+#         groupcols = groupcols[0]
+    
+#     if isinstance(data, pd.DataFrame):
+#         dfexpand = pd.concat([pd.Series(np.array(x[1].values[0]), 
+#                                         index=pd.Index([x[0]]*len(x[1].values[0]), name=groupcols),
+#                                         name=name) 
+#                               for x in data.iterrows()], axis=0)
+#     else:
+#         dfexpand = pd.concat([pd.Series(np.array(x[1]),
+#                                         index=pd.Index([x[0]]*len(x[1]), name=groupcols),
+#                                         name=name) 
+#                               for x in data.iteritems()], axis=0)
+        
+#     if not(isinstance(dfexpand, pd.DataFrame)):
+#         dfexpand = pd.DataFrame(dfexpand)
+        
+#     return dfexpand
     

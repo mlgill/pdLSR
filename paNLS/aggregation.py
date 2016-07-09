@@ -1,83 +1,87 @@
 import pandas as pd
-import numpy as np
-
-from .auxiliary import expand_df, fix_index
 
 
 # Create the results table
-def get_results(fit_data, paramnames):
+def get_results(fitobj_df, params):
+       
+    # Get the parameters
+    parameters = pd.concat( [fitobj_df.fitobj.apply(lambda x: pd.Series({'{}_value'.format(par_name):x.params[par_name].value, 
+                                                                         '{}_stderr'.format(par_name):x.params[par_name].stderr}
+                                                                     )
+                                                )
+                            for par_name in params ], axis=1)
+    
+    # Get the confidence intervals
+    mask = pd.notnull(fitobj_df.ciobj)
+    conf_intervals = pd.concat([fitobj_df.loc[mask, 'ciobj'].apply(lambda x: pd.Series({'{}_ci{:.2f}'.format(par_name, x[par_name][0][0]):
+                                                                                        x[par_name][0][1]}))
+                                for par_name in params 
+                                for s in [sigma]
+                               ], axis=1)
 
-    param_values = fit_data.fitobj.apply(lambda x: [x.params[par].value for par in paramnames])
-    param_stderr = fit_data.fitobj.apply(lambda x: [x.params[par].stderr for par in paramnames])
+    # Combine results and fix column names
+    results = pd.merge(parameters, conf_intervals, left_index=True, right_index=True)
+    
+    colnames = [re.search(r"""([^_]+)_([^_]+)""", col) for col in results.columns]
+    results.columns = pd.MultiIndex.from_tuples([(col.group(1), col.group(2)) for col in colnames])
+    
+    results.sortlevel(axis=1, inplace=True)
+    
+    # Fix the confidence intervals so they are differences
+    # This requires slicing the data and dropping the last column
+    # index to get the broadcasing working
+    ci_cols = [x for x in results.columns.levels[-1] if 'ci' in x]
 
-    if 'ciobj' in fit_data.columns:
-        bool_mask = pd.notnull(fit_data.ciobj)
-        param_cilo   =  fit_data.ix[bool_mask, 'ciobj'].apply(lambda x: [x[par][0][1] for par in paramnames])
-        param_cihi   =  fit_data.ix[bool_mask, 'ciobj'].apply(lambda x: [x[par][-1][1] for par in paramnames])
+    value_df = results.loc[:, (slice(None),['value'])]
+    value_df.columns = value_df.columns.droplevel(-1)
 
-    results = pd.DataFrame(index=fit_data.index)
+    for ci in ci_cols:
+        ci_df = results.loc[:, (slice(None),[ci])]
+        ci_cols_orig = ci_df.columns
+        ci_df.columns = ci_df.columns.droplevel(-1)
 
-    for par in enumerate(paramnames):
-        results[par[1]] = param_values.apply(lambda x: x[par[0]])
+        ci_df = (value_df - ci_df).abs()
+        ci_df.columns = ci_cols_orig
 
-    for par in enumerate(paramnames):
-        results[par[1]+'_SE'] = param_stderr.apply(lambda x: x[par[0]])
-
-    if 'ciobj' in fit_data.columns:
-        for par in enumerate(paramnames):
-            results[par[1]+'_LO'] = np.NaN
-            results[par[1]+'_HI'] = np.NaN
-            
-            results.ix[bool_mask, par[1]+'_LO'] = param_cilo.apply(lambda x: x[par[0]])
-            results.ix[bool_mask, par[1]+'_HI'] = param_cilo.apply(lambda x: x[par[0]])
-        
+        results.loc[:, ci_df.columns] = ci_df
+    
+    results = (results
+               .sortlevel(level=1, axis=1, ascending=False)
+               .sortlevel(level=0, axis=1, sort_remaining=False)
+               )
+    
     return results
 
 
+# The stats table
+def get_stats(fitobj_df, stats_df, stats_cols=['chisqr', 'redchi', 'aic', 'bic', 'covar']):
+    
+    for dat in stats_cols:
+        lambda_str = 'lambda x: x.{}'.format(dat)
+        stats_df[dat] = fitobj_df.apply(eval(lambda_str))
+        
+    return stats_df
+
 
 # Table of the xdata, ydata, ycalc, and residuals
-def get_data(fit_data, paramnames, groupcols):
+# def get_data(fit_data, paramnames, groupcols):
 
-    # Index must be reset to avoid shape error with > 1 groupcol
-    ycalc = fit_data.reset_index().apply(lambda x: tuple( x.model_eq([x.fitobj.params[par].value for par in paramnames], 
-                                                          np.asarray(x.xdata)) 
-                                                         ), axis=1)
+#     # Index must be reset to avoid shape error with > 1 groupcol
+#     ycalc = fit_data.reset_index().apply(lambda x: tuple( x.model_eq([x.fitobj.params[par].value for par in paramnames], 
+#                                                           np.asarray(x.xdata)) 
+#                                                          ), axis=1)
 
-    # ycalc.set_index(groupcols, inplace=True)
-    ycalc = fix_index(ycalc, fit_data, groupcols, 'ycalc')
+#     # ycalc.set_index(groupcols, inplace=True)
+#     ycalc = fix_index(ycalc, fit_data, groupcols, 'ycalc')
 
-    # The residuals from lmfit are wrong, so calculate them below
-    # resid = fit_data.fitobj.apply(lambda x: tuple( x.residual ))
+#     # The residuals from lmfit are wrong, so calculate them below
+#     # resid = fit_data.fitobj.apply(lambda x: tuple( x.residual ))
 
-    data = pd.concat([ expand_df(fit_data.xdata, 'xdata', groupcols),
-                       expand_df(fit_data.ydata, 'ydata', groupcols),
-                       expand_df(ycalc, 'ycalc', groupcols)
-                     ], axis=1)
+#     data = pd.concat([ expand_df(fit_data.xdata, 'xdata', groupcols),
+#                        expand_df(fit_data.ydata, 'ydata', groupcols),
+#                        expand_df(ycalc, 'ycalc', groupcols)
+#                      ], axis=1)
 
-    data['residual'] = data.ydata - data.ycalc
+#     data['residual'] = data.ydata - data.ycalc
     
-    return data
-
-
-
-# The stats table
-def get_stats(fit_data, output_data):
-    stats = pd.DataFrame(index=fit_data.index)
-
-    #stats['nobs'] = fit_data.fitobj.apply(lambda x: x.ndata)
-    #stats['npar'] = fit_data.params.apply(lambda x: len([y.name for y in x if y.vary]))
-    #stats['dof'] = stats.nobs - stats.npar
-    stats['nobs'] = fit_data['nobs']
-    stats['npar'] = fit_data['npar']
-    stats['dof'] = fit_data['dof']
-
-    stats['chisq'] = fit_data.fitobj.apply(lambda x: x.chisqr)
-    stats['redchisq'] = fit_data.fitobj.apply(lambda x: x.redchi)
-    stats['aic'] = fit_data.fitobj.apply(lambda x: x.aic)
-    stats['bic'] = fit_data.fitobj.apply(lambda x: x.bic)
-    stats['rss'] = output_data.residual.groupby(output_data.index).apply(lambda x: np.sum(x**2))
-
-    # TODO: return this as a separate dataframe with an additional index
-    stats['covar'] = [x[1].covar for x in fit_data.fitobj.iteritems()]
-    
-    return stats
+#     return data
