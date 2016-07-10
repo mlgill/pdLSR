@@ -5,7 +5,9 @@ from .pdlmfit import pdlmfit
 # [ ] add docstrings
 # [ ] make the predict function work
 # [ ] add common functions
-# [ ] try with multiple variables?
+# [ ] add .sortlevel(axis=0) to all tables
+# [ ] plotting function?
+# [ ] function to copy demo notebook and data
 
 # [ ] check that groupcols are in the data, otherwise quit
 # [ ] check that xname/yname/yerr are in the data, otherwise quit
