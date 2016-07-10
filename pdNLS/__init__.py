@@ -1,4 +1,4 @@
-from .pdlmfit import pdlmfit
+from .pdNLS import pdNLS
 
 
 # TODOs:
