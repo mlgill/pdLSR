@@ -7,7 +7,7 @@ from .aggregation import get_results, get_stats
 from .auxiliary import convert_param_dict_to_df
 
 
-class pdlmfit(object):
+class pdNLS(object):
     
     def __init__(self, data, model_eq=None, groupcols=None, params=None, 
                  xname=None, yname=None, yerr=None, 
