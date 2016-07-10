@@ -1,0 +1,4 @@
+numpy
+pandas>=0.18.1
+lmfit>=0.9.3
+multiprocess>=0.70.4
