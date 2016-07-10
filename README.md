@@ -30,6 +30,8 @@ For plotting, the following additional libraries are required:
 * matplotlib
 * seaborn
 
+`pdNLS` has currently only been tested with Python 2, but this is expected to change in the near future.
+
 ### Installation and Demo
 [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/mlgill/pdNLS)
 
