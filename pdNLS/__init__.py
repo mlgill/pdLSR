@@ -1,6 +1,12 @@
 from .functions import *
 from .pdNLS import pdNLS
 
+from .docstring import DOCSTRING
+from .version import VERSION
+
+__doc__ = DOCSTRING
+__version__ = VERSION
+
 
 # TODOs:
 # [ ] add docstrings
