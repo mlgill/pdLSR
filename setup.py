@@ -29,7 +29,7 @@ def check_dependencies():
         install_requires.append('numpy')
 
 
-   try:
+    try:
         import lmfit
 
     except ImportError:
