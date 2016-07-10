@@ -1,3 +1,4 @@
+from .functions import *
 from .pdNLS import pdNLS
 
 
@@ -12,7 +13,8 @@ from .pdNLS import pdNLS
 # [ ] check that groupcols are in the data, otherwise quit
 # [ ] check that xname/yname/yerr are in the data, otherwise quit
 # [ ] check that method is leastsq, otherwise quit
+
+# [ ] make confidence interval calculation work without multithreading
 # [ ] search for NaNs in model column and fill
 # [ ] make unrecognized parameter format throw an error and quit
-
-# [ ] compatibility with Python 3?
+# [ ] compatibility with Python 3

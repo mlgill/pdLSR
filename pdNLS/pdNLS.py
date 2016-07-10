@@ -13,6 +13,9 @@ class pdNLS(object):
                  xname=None, yname=None, yerr=None, 
                  method='leastsq', sigma=0.95, threads=None):
         
+        # Ensure the selected columns aren't in the index
+        data = data.reset_index()
+
         # Setup the groupby columns
         # TODO check that groupcols are in the data, otherwise quit
         if groupcols is not None:
@@ -158,7 +161,7 @@ class pdNLS(object):
         #                               group_keys=False)
         #                      .apply(lambda x: predict(x))
         #                      )
-        
+        self.data = self.data.sortlevel(axis=0)
         
         # Create the stats dataframe
         self.stats = pd.DataFrame(index=self._index)
@@ -184,9 +187,16 @@ class pdNLS(object):
             
         
         # The results
-        self.results = get_results(self._fitobj, self._paramnames, self._sigma)
+        self.results = ( get_results(self._fitobj, 
+                                     self._paramnames, 
+                                     self._sigma)
+                         .sortlevel(axis=0)
+                        )
         
         # The remaining statistics
-        self.stats = get_stats(self._fitobj.fitobj, self.stats)
+        self.stats = ( get_stats(self._fitobj.fitobj, 
+                                 self.stats)
+                       .sortlevel(axis=0)
+                      )
         
         return
