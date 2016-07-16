@@ -7,7 +7,7 @@ from .aggregation import get_results, get_stats
 from .auxiliary import convert_param_dict_to_df
 
 
-class pdNLS(object):
+class pdLSR(object):
     
     def __init__(self, data, model_eq=None, groupcols=None, params=None, 
                  xname=None, yname=None, yerr=None, 
@@ -90,23 +90,27 @@ class pdNLS(object):
         return
 
     
-    def predict(self, xcalc=None, xnum=10):
+    def _predict(self, xcalc, xnum):
         
         xname = self._xname
         
-        if (xcalc and (xcalc=='global')):
-            xmin = self.data[xname].min()
-            xmax = self.data[xname].max()
-            xdata = np.linspace(xmin, xmax, xnum)
+        if xcalc:
+            if xcalc=='global':
+                xmin = self.data[xname].min()
+                xmax = self.data[xname].max()
+                xdata = np.linspace(xmin, xmax, xnum)
         
         predict_list = list()
+
+        index_names = self._fitobj.index.names
         
         for index in self._fitobj.index.values:
             
-            if (xcalc and (xcalc=='local')):
-                xmin = self.data.loc[index, xname].min()
-                xmax = self.data.loc[index, xname].max()
-                xdata = np.linspace(xmin, xmax, xnum)
+            if xcalc:
+                if xcalc=='local':
+                    xmin = self.data.loc[index, xname].min()
+                    xmax = self.data.loc[index, xname].max()
+                    xdata = np.linspace(xmin, xmax, xnum)
             else:
                 xdata = (self
                          .data
@@ -114,6 +118,7 @@ class pdNLS(object):
                          .squeeze()
                          .values
                          )
+
             model_eq = (self
                         ._fitobj
                         .loc[index, 'model_eq']
@@ -129,12 +134,14 @@ class pdNLS(object):
             
             ydata = model_eq(params, xdata)
             
+            index_array = pd.Index([index]*len(xdata), name=index_names)
+
             if xcalc:
                 predict_data = pd.DataFrame({'xcalc':xdata, 'ycalc':ydata},
-                                            index=pd.Index([index]*len(xdata)))
+                                            index=index_array)
             else:
                 predict_data = pd.Series(ydata, name='ycalc',
-                                         index=pd.Index([index]*len(xdata)))
+                                         index=index_array)
                 
             predict_list.append(predict_data)
             
@@ -150,11 +157,6 @@ class pdNLS(object):
         self._fitobj['fitobj'] = ( self._fitobj.minimizer
                                   .apply(lambda x: x.minimize(method=self._method))
                                   )
-        
-        # TODO make the predict function work
-        # Predict the y values and calculate residuals
-        self.data['ycalc'] = predict()
-        self.data['residuals'] = self.data[self._yname] - self.data['ycalc']
 
         self.data = self.data.sortlevel(axis=0)
         
@@ -187,6 +189,10 @@ class pdNLS(object):
                                      self._sigma)
                          .sortlevel(axis=0)
                         )
+
+        # Predict the y values and calculate residuals
+        self.data['ycalc'] = self._predict(None, None)
+        self.data['residuals'] = self.data[self._yname] - self.data['ycalc']
         
         # The remaining statistics
         self.stats = ( get_stats(self._fitobj.fitobj, 
@@ -194,4 +200,8 @@ class pdNLS(object):
                        .sortlevel(axis=0)
                       )
         
+        return
+
+    def predict(self, xcalc='global', xnum=10):
+        self.model = self._predict(xcalc, xnum)
         return

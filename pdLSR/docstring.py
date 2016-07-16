@@ -1,4 +1,4 @@
 DOCSTRING = """\
-pdNLS
+pdLSR
 by Michelle L. Gill
 """

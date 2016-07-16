@@ -1,5 +1,5 @@
 from .functions import *
-from .pdNLS import pdNLS
+from .pdLSR import pdLSR
 
 from .docstring import DOCSTRING
 from .version import VERSION
@@ -10,7 +10,6 @@ __version__ = VERSION
 
 # TODOs:
 # [ ] add docstrings
-# [ ] make the predict function work
 # [ ] add common functions
 # [ ] add .sortlevel(axis=0) to all tables
 # [ ] plotting function?
