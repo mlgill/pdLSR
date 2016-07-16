@@ -88,59 +88,57 @@ class pdNLS(object):
         self._params_df = params_df.fillna(method='ffill')
 
         return
+
     
-    def _predict(self, data_df, xcalc, xtype, xnum):
-    
-        # Get the index for selection
-        index = data_df.index.unique()[0]
-
-        # Choose the xdata
-        print(self)
-        xname = self._xname
-        xdata = self.data.loc[index, xname]
-
-        if xcalc:
-            if xtype == 'global':
-                xmin = self.data[xname].min()
-                xmax = self.data[xname].max()
-            else:
-                xmin = xdata.min()
-                xmax = xdata.max()
-
-            xname = 'xdata'
-            xdata = pd.Series(np.linspace(xmin, xmax, xnum))
-            xindex = pd.Index(np.array([index]*xnum))
-
-        # Pick out the parameters for this data
-        params = ( self
-                 .results
-                 .sortlevel(axis=1)
-                 .loc[[index], (slice(None),['value'])]
-                 )
-        params.columns = params.columns.levels[0]
-        params = params[self._paramnames].squeeze()
-
-
-        model_eq = self._fitobj.model_eq.loc[index]
-
-        ycalc = model_eq(params, xdata)
-
-        if not xcalc:
-            return ycalc
-        else:
-            return pd.DataFrame({xname:xdata, 'ycalc':ycalc})
-    
-    
-    def predict(self, xcalc=False, xtype='global', xnum=50):
+    def predict(self, xcalc=None, xnum=10):
         
-        retval = ( self
-                  ._fitobj
-                  .groupby(level=range(self._ngroupcols), 
-                            group_keys=False)
-                  .apply(lambda x: _predict(x, xcalc, xtype, xnum))
-                  )
-                  
-        return retval
+        xname = self._xname
+        
+        if (xcalc and (xcalc=='global')):
+            xmin = self.data[xname].min()
+            xmax = self.data[xname].max()
+            xdata = np.linspace(xmin, xmax, xnum)
+        
+        predict_list = list()
+        
+        for index in self._fitobj.index.values:
+            
+            if (xcalc and (xcalc=='local')):
+                xmin = self.data.loc[index, xname].min()
+                xmax = self.data.loc[index, xname].max()
+                xdata = np.linspace(xmin, xmax, xnum)
+            else:
+                xdata = (self
+                         .data
+                         .loc[index, xname]
+                         .squeeze()
+                         .values
+                         )
+            model_eq = (self
+                        ._fitobj
+                        .loc[index, 'model_eq']
+                        )
+            
+            params = (self
+                      .results
+                      .sortlevel(axis=1)
+                      .loc[index, (slice(None), ['value'])]
+                      .squeeze()
+                      .values
+                      )
+            
+            ydata = model_eq(params, xdata)
+            
+            if xcalc:
+                predict_data = pd.DataFrame({'xcalc':xdata, 'ycalc':ydata},
+                                            index=pd.Index([index]*len(xdata)))
+            else:
+                predict_data = pd.Series(ydata, name='ycalc',
+                                         index=pd.Index([index]*len(xdata)))
+                
+            predict_list.append(predict_data)
+            
+        return pd.concat(predict_list, axis=0)
     
     
     def fit(self):
@@ -155,12 +153,9 @@ class pdNLS(object):
         
         # TODO make the predict function work
         # Predict the y values and calculate residuals
-        #self.data['ycalc'] = ( self
-        #                      .data
-        #                      .groupby(level=range(self._ngroupcols), 
-        #                               group_keys=False)
-        #                      .apply(lambda x: predict(x))
-        #                      )
+        self.data['ycalc'] = predict()
+        self.data['residuals'] = self.data[self._yname] - self.data['ycalc']
+
         self.data = self.data.sortlevel(axis=0)
         
         # Create the stats dataframe

@@ -37,12 +37,12 @@ For plotting, the following additional libraries are required:
 
 The preferred method for installing `pdNLS` and all of its dependencies is to use the `conda` or `pip` package managers. 
 
-* For conda: `conda install -c mlgill pdNLS`
+* For conda: `conda install -c mlgill pdnls` -- unfortunately conda seems to require lowercase names for packages
 * For pip: `pip install pdNLS`
 
 However it can also be installed manually by cloning the repo into your `PYTHONPATH`.  
 
-There is a demo notebook that can be executed locally or live from GitHub using [mybinder.org](http://mybinder.org). After clicking the badge at the top of this section, navigate to `pdNLS --> demo --> pdNLS_demo.ipynb` and everything should be setup to execute the demo in a browser. No installation required!
+There is a demo notebook that can be executed locally or live from GitHub using [mybinder.org](http://mybinder.org/repo/mlgill/pdNLS). After clicking the badge at the top of this section, navigate to `pdNLS --> demo --> pdNLS_demo.ipynb` and everything should be setup to execute the demo in a browser. No installation required!
 
 ## Documentation
 
