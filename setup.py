@@ -1,16 +1,16 @@
 #! /usr/bin/env python
 
-from pdNLS import DOCSTRING, VERSION
+from pdLSR import DOCSTRING, VERSION
 
-DESCRIPTION = 'pdNLS: Pandas-aware non-linear least squares minimization.'
+DESCRIPTION = 'pdLSR: Pandas-aware least squares regression.'
 LONG_DESCRIPTION = DOCSTRING
 
-DISTNAME = 'pdNLS'
+DISTNAME = 'pdLSR'
 MAINTAINER = 'Michelle Gill'
 MAINTAINER_EMAIL = 'michelle@michellelynngill.com'
-URL = 'https://github.com/mlgill/pdNLS'
+URL = 'https://github.com/mlgill/pdLSR'
 LICENSE = 'BSD (3-clause)'
-DOWNLOAD_URL = 'https://github.com/mlgill/pdNLS'
+DOWNLOAD_URL = 'https://github.com/mlgill/pdLSR'
 
 try:
     from setuptools import setup
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         version=VERSION,
         download_url=DOWNLOAD_URL,
         install_requires=install_requires,
-        packages=['pdNLS'],
+        packages=['pdLSR'],
         include_package_data = True,
         classifiers=[
                      'Intended Audience :: Science/Research',

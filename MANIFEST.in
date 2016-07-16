@@ -3,4 +3,4 @@ include LICENSE
 include MANIFEST.in
 include environment.yml
 include requirements.txt
-recursive-include pdNLS/demo *
+recursive-include pdLSR/demo *
