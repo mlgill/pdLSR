@@ -64,34 +64,3 @@ def get_confidence_interval(fitobj_df, mask, sigma, threads=None):
     ciobj = np.array(pool.map(_calc_ci, fitobj_arr)).flatten()
     
     return pd.Series(ciobj, index=fitobj_df.index)
-
-
-# # Function to predict y-values based on fit parameters and an x-array
-# def predict(fit_data, groupby, xtype='global', xnum=50, xcalc=None):
-    
-#     model = pd.DataFrame(index=fit_data.index)
-#     model['model_eq'] = fit_data.model_eq
-
-#     model['params'] = fit_data.reset_index().apply(lambda x: tuple([x.fitobj.params[par].value 
-#                                                                     for par in x.paramnames]), axis=1).tolist()
-
-#     if xcalc is not None:
-#         model['xcalc'] = [tuple(xcalc) for x in range(model.shape[0])]
-#     else:
-#         if xtype == 'global':
-#             xmin = fit_data.xdata.apply(lambda x: np.array(x).min())
-#             xmax = fit_data.xdata.apply(lambda x: np.array(x).max())
-#             model['xcalc'] = [tuple(np.linspace(xmin.min(), xmax.max(), xnum)) for x in range(model.shape[0])]
-#         else:
-#             model['xcalc'] = fit_data.reset_index().apply(lambda x: tuple(np.linspace(np.asarray(x.xdata).min(),
-#                                                                                       np.asarray(x.xdata).max(),
-#                                                                                       xnum)),
-#                                                           axis=1).tolist()
-
-#     model['ycalc'] = model.reset_index().apply(lambda x: 
-#                                            tuple( x.model_eq(x.params, np.asarray(x.xcalc)) ), axis=1).tolist()
-
-#     predict = pd.concat([ expand_df(model.xcalc, 'xcalc', groupby), 
-#                           expand_df(model.ycalc, 'ycalc', groupby) ], axis=1)
-
-#     return predict

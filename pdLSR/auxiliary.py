@@ -18,34 +18,6 @@ def error_function(par, func, xdata, ydata=None, yerr=None):
         return (ycalc - ydata)**2/yerr**2
 
 
-def convert_param_dict_to_df(params, ngroups, index):
-    ### CLEAN ###
-
-    # Unique list of variable names
-    var_names = map(lambda x: x['name'], params)
-
-    # Expanded list of names and all properties to create a 
-    # multi-level column index
-    column_list = [(x['name'], y) 
-                   for x in params 
-                       for y in x.keys()
-                  ]
-
-    column_index = pd.MultiIndex.from_tuples(column_list, 
-                                             sortorder=None)
-
-    # Create a dataframe from the indexes and fill it
-    params_df = pd.DataFrame(index=index, columns=column_index)
-
-    # Fill df by iterating over the parameter name index
-    # and then each of its keys
-    for var in enumerate(params_df.columns.levels[0]):
-        for key in params_df.loc[:,var[1]]:
-            params_df[(var[1],key)] = params[var[0]][key]
-
-    return params_df
-
-
 # # Function to expand arrays contained in a single dataframe row
 # def expand_df(data, name, groupby):
     

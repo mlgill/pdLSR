@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import re
 
 
@@ -77,9 +78,13 @@ def get_covar(fitobj_df):
         covar = fitobj_df.loc[index, 'fitobj'].covar
         
         index_array = pd.Index([index]*4, name=index_names)
+
+        nrow,ncol = covar.shape
+
+        row_index, col_index = np.unravel_index(list(range(nrow*ncol)), (nrow, ncol))
         
-        covar_list.append(pd.DataFrame({'row':  [0,0,1,1],
-                                        'col':  [0,1,0,1],
+        covar_list.append(pd.DataFrame({'row':  row_index,
+                                        'col':  col_index,
                                         'covar':covar.flatten()},
                                        index=index_array,
                                        columns=['row', 'col', 'covar']))

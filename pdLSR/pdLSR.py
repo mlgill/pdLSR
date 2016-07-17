@@ -4,16 +4,18 @@ from six import string_types
 
 from .fitting import get_minimizer, get_confidence_interval
 from .aggregation import get_results, get_stats, get_covar
-from .auxiliary import convert_param_dict_to_df
+from .lmfit import lmfit_params
 
 
 class pdLSR(object):
     
-    def __init__(self, data, model_eq, groupby, params, 
+    def __init__(self, data, model_eq, groupby, 
                  xname, yname, yerr=None, 
-                 method='leastsq', sigma=0.95, threads=None):
-        
-        # Ensure the selected columns aren't in the index
+                 minimizer='lmfit',
+                 **minimizer_kwargs):
+
+
+        # Ensure the selected columns aren't hidden in the index
         data = data.reset_index()
 
         # Setup the groupby columns
@@ -23,8 +25,6 @@ class pdLSR(object):
                 
         self._groupby = groupby
         self._ngroupby = len(groupby)
-        
-        self._paramnames = [x['name'] for x in params]
 
         # Dependent and independent variables
         # TODO check that xname/yname are in the data, otherwise quit
@@ -32,20 +32,13 @@ class pdLSR(object):
         self._yname = yname
         self._yerr = yerr
 
-        self._datacols = [xname, yname]
+        self._datacols = [self._xname, self._yname]
         if yerr is not None:
             # TODO check that yerr is in the data, otherwise quit
             self._datacols += [yerr]
 
-        # Append the dataframe of data
-        self.data = ( data
-                     .reset_index()
-                     [self._groupby + self._datacols]
-                     .set_index(self._groupby)
-                     )
-
         # Unique index information
-        index = ( data[self._groupby + [xname]]
+        index = ( data[self._groupby + [self._xname]]
                   .groupby(self._groupby)
                   .max()
                   .index
@@ -53,39 +46,26 @@ class pdLSR(object):
 
         self._index = index
         self._ngroups = data.index.shape[0]
+
+        # Get the arguments for the minimizer
+        kwargs_input = minimizer_kwargs['minimizer_kwargs']
+
+        if minimizer=='lmfit':
+            self = lmfit_params(self, kwargs_input)
+        else:
+            print('lmfit is currently the only minimizer implemented')
+            # TODO: quit with an error
         
-        # Fitting and confidence interval methods
-        self._method = method
-        # TODO check that method is leastsq, otherwise quit
-        
-        if not hasattr(sigma, '__iter__'):
-            sigma = [sigma]
-        self._sigma = sigma
-        
-        self._threads = threads
-        
+        # Append the dataframe of data
+        self.data = ( data
+                     [self._groupby + self._datacols]
+                     .set_index(self._groupby)
+                     )
+
         # Dataframe to hold the fitting objects
         self._fitobj = pd.DataFrame(index=self._index)
         self._fitobj['model_eq'] = model_eq
         self._fitobj['model_eq'] = self._fitobj.model_eq.fillna(method='ffill')
-        
-        # Setup parameter dataframe
-        self._params = params
-        if (isinstance(self._params, list) and isinstance(self._params[0], dict)):
-            # params is a list of dictionaries
-            params_df = convert_param_dict_to_df(self._params, 
-                                                 self._ngroups, 
-                                                 self._index)
-            
-        elif isinstance(self._params, pd.DataFrame):
-            # params is a dataframe
-            params_df = self._params
-            
-        else:
-            # TODO make unrecognized parameter format throw an error and quit
-            print('Parameters should be either a list of dictionaries or a dataframe.')
-            
-        self._params_df = params_df.fillna(method='ffill')
 
         return
 
@@ -206,7 +186,7 @@ class pdLSR(object):
         return
 
 
-    def predict(self, xcalc='global', xnum=10):
+    def predict(self, xcalc='global', xnum=20):
         self.model = self._predict(xcalc, xnum)
         return
 
