@@ -1,6 +1,17 @@
 import pandas as pd
 
 def lmfit_params(self, kwargs_input):
+    """Assign lmfit minimizer parameters.
+
+    Parameters
+    ----------
+    kwargs_input : dictionary
+        Dictionary of input parameters for lmfit minimizer.
+
+    Returns
+    -------
+    pdLSR : class
+        Assigns necessary attributes to the pdLSR class."""
 
     kwargs = {'method':'leastsq',
               'sigma':'0.95',
@@ -40,7 +51,7 @@ def lmfit_params(self, kwargs_input):
         raise AttributeError('Parameters should be either a list of dictionaries or a dataframe.')
         
     self._params_df = params_df.fillna(method='ffill')
-    
+
     # Setup parameter dataframe
     self._paramnames = [x['name'] for x in self._params]
 
@@ -48,7 +59,21 @@ def lmfit_params(self, kwargs_input):
 
 
 def convert_param_dict_to_df(params, ngroups, index):
-    ### CLEAN ###
+    """Converts a dictionary of parameter values to a dataframe.
+
+    Parameters
+    ----------
+    params : dictionary
+        Dictionary of parameter values for lmfit.
+    ngroups : integer
+        Number of groups being fit.
+    index : Pandas index
+        The index for the grouping of the dataframe.
+
+    Returns
+    -------
+    params_df : dataframe
+        An indexed dataframe with parameter values extracted."""
 
     # Unique list of variable names
     var_names = map(lambda x: x['name'], params)

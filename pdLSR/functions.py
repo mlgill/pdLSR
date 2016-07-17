@@ -1,6 +1,21 @@
 import numpy as np
 
 def linear(par, xdata):
+    """A linear function for minimization.
+
+    Parameters
+    ----------
+    par : list or dictionary
+        Contains the slope and intercept,
+        order must be as stated.
+    xdata : array
+        An array of dependent data.
+
+    Returns
+    -------
+    ydata : array
+        A line calculated from the parameters
+        and the xdata."""
     
     # Parse multiple input parameter
     # formats for slope, intercept    
@@ -23,6 +38,22 @@ def linear(par, xdata):
 
 
 def exponential_decay(par, xdata):
+    """An exponential decay function for minimization.
+
+    Parameters
+    ----------
+    par : list or dictionary
+        Contains the intitial intensity ('inten')
+        and decay rate ('rate'),
+        order must be as stated.
+    xdata : array
+        An array of dependent data.
+
+    Returns
+    -------
+    ydata : array
+        An exponential decay calculated from the parameters
+        and the xdata."""
     
     # Parse multiple input parameter
     # formats for intensity, rate    

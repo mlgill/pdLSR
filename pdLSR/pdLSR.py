@@ -8,12 +8,60 @@ from .lmfit import lmfit_params
 
 
 class pdLSR(object):
+
+    """pdLSR is a class that performs least-squares regression using
+    Pandas-aware features such as dataframe input and groupby functionality.
+
+    Parameters
+    ----------
+    data : dataframe
+        Input data containing dependent, independent, and optional 
+        error estimates.
+    model_eq : function 
+        The function that will be minimized during regression.
+    groupby : list or string
+        The name of a column (or a list of columns) to use for grouping
+        during regression.
+    xname : string
+        The column name of the independent variable. Currently only 
+        a single independent variable is supported.
+    yname : string
+        The column name of the dependent variable. Currently only
+        a single dependent variable is supported.
+    yerr : string or None
+        The column name of the error estimates (optional). Currently
+        only a single column of error estimates is supported.
+    minimizer : string
+        The name of the minimizer function. 'lmfit' is currently
+        supported.
+    minimizer_kwargs : dictionary
+        The arguments for the minimizer. 
+
+        For 'lmfit':
+        Required inputs are:
+            'params': the parameters. 
+        Optional inputs are:
+            'method': only 'leastsq' is supported.
+            'sigma': which is the confidence interval 
+                (number or list, default is 0.95).
+            'threads': the number of threads to use for calculation of the 
+                confidence intervals (default is None which will cause
+                automatic calculation).
+
+    Returns
+    -------
+    pdLSR : class
+        The pdLSR class contains the `fit` and `predict` methods to
+        perform minimization and calculate a best fit line based on
+        input values.
+    """
     
     def __init__(self, data, model_eq, groupby, 
                  xname, yname, yerr=None, 
                  minimizer='lmfit',
                  **minimizer_kwargs):
 
+        """Initialize the pdLSR class and check that inputs are valid."""
 
         # Ensure the selected columns aren't hidden in the index
         data = data.reset_index()
@@ -77,6 +125,8 @@ class pdLSR(object):
 
     
     def _predict(self, xcalc, xnum):
+
+        """Perform prediction on input independent data or on a custom range."""
         
         xname = self._xname
         
@@ -135,6 +185,21 @@ class pdLSR(object):
     
     
     def fit(self):
+        """Perform regression using the minimizer and input parameters of choice.
+
+        Returns
+        -------
+        pdLSR.data : dataframe
+            This dataframe contains the input data, predicted values, and
+            residuals.
+        pdLSR.results : dataframe
+            This dataframe contains the regression parameters.
+        pdLSR.stats : dataframe
+            This dataframe contains the evaluation parameters provided by 
+            the minimizer.
+        pdLSR.covar : dataframe
+            This dataframe contains the covariance matrix.
+        """
         
         # Perform the minimization
         self._fitobj['minimizer'] = get_minimizer(self._index, self._fitobj, self.data, self._params_df, 
@@ -155,6 +220,7 @@ class pdLSR(object):
                               .groupby(level=list(range(self._ngroupby)))
                               .size()
                               )
+
         self.stats['npar'] = len(self._params_df.columns.levels[0])
         self.stats['dof'] = self.stats.nobs - self.stats.npar
         
@@ -193,11 +259,48 @@ class pdLSR(object):
 
 
     def predict(self, xcalc='global', xnum=20):
+        """Calculate expected values based on interpolated independent data.
+
+        Parameters
+        ----------
+        xcalc : string
+            'global' or 'local' indicates whether to use the global min/max
+            for dependent data or just those from the current group.
+            'global' is the default.
+        xnum : int
+            Number of points to determine, default is 20.
+
+        Returns
+        -------
+        pdLSR.model : dataframe
+            An indexed dataframe with calculated independent and 
+            dependent data.
+        """
+
+        if not hasattr(self, 'results'):
+            raise AttributeError('The pdLSR object must be fit before predicting.')
+
         self.model = self._predict(xcalc, xnum)
         return
 
 
     def pivot_covar(self):
+        """Pivot the covariance matrix so column values extend horizontally.
+
+        Parameters
+        ----------
+        pdLSR : class
+            A pdLSR class with covariance dataframe.
+
+        Returns
+        -------
+        covar_pivot : dataframe
+            A dataframe pivoted so that column elements of the matrix
+            are horizonal. Useful for multiplication, etc."""
+
+        if not hasattr(self, 'covar'):
+            raise AttributeError('The pdLSR object does not contain a covariance matrix dataframe.')
+
         return (self
                 .covar
                 .groupby(level=list(range(self._ngroupby)))

@@ -8,6 +8,31 @@ import multiprocess as multiprocessing
 
 def get_minimizer(index, fitobj_df, data_df, params_df, 
                   xname, yname, yerr):
+    """Create an indexed series of minimizer functions.
+
+    Parameters
+    ----------
+    index : Pandas index
+        A grouped index for the dataframe.
+    fitobj_df : dataframe
+        A dataframe of the fit objects.
+    data_df : dataframe
+        A dataframe of the input data.
+    params_df : dataframe
+        A dataframe of the input parameters.
+    xname : string
+        Name of the data_df column containing the xdata.
+    yname : string
+        Name of the data_df column contain the ydata.
+    yerr : string
+        Name of the data_df column containg the yerror
+        estimates (optional).
+
+
+    Returns
+    -------
+    minimizer : series
+        A pandas series containing all the indexed minimizer objects."""
     
     # Creates the lmfit minimizer object
     
@@ -41,6 +66,25 @@ def get_minimizer(index, fitobj_df, data_df, params_df,
 
 
 def get_confidence_interval(fitobj_df, mask, sigma, threads=None):
+    """Calculate the confidence intervals from the minimizer objects.
+
+    Parameters
+    ----------
+    fitobj_df : dataframe
+        A dataframe of the fit objects.
+    mask : array/series
+        A boolean mask indicating if the confidence intervals
+        can't be calculated for any of the groups.
+    sigma : float or list
+        The confidence intervals to be calculated.
+    threads : int or None
+        The number of threads to use for multithreaded 
+        calculation of confidence intervals.
+
+    Returns
+    -------
+    ci_obj : series
+        A series of confidence interval objects."""
 
     def _calc_ci(arr):
 

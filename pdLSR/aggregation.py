@@ -3,8 +3,22 @@ import numpy as np
 import re
 
 
-# Create the results table
 def get_results(fitobj_df, params, sigma):
+    """Aggregate fit parameters into a dataframe.
+
+    Parameters
+    ----------
+    fitobj_df : dataframe
+        A dataframe containing minimizer objects and confidence intervals.
+    params : list
+        List of parameter names.
+    sigma : float or list
+        Confidence interval value or list.
+
+    Returns
+    -------
+    results : dataframe
+        A dataframe of parameter values and error estimates."""
        
     # Get the parameters
     parameters = pd.concat( [fitobj_df.fitobj.apply(lambda x: pd.Series({'{}_value'.format(par_name):x.params[par_name].value, 
@@ -55,8 +69,23 @@ def get_results(fitobj_df, params, sigma):
     return results
 
 
-# The stats table
 def get_stats(fitobj_df, stats_df, stats_cols=['chisqr', 'redchi', 'aic', 'bic']):
+    """Aggregate regression statistics into a dataframe.
+
+    Parameters
+    ----------
+    fitobj_df : series
+        A series containing minimizer objects.
+    stats_df : dataframe
+        A dataframe of previously calculated stats (dof, npar, etc.).
+    stats_cols : list
+        A list containing the names of fit attributes to add to the
+        nascent stats dataframe.
+
+    Returns
+    -------
+    stats_df : dataframe
+        A dataframe with new"""
     
     for dat in stats_cols:
         lambda_str = 'lambda x: x.{}'.format(dat)
@@ -65,8 +94,18 @@ def get_stats(fitobj_df, stats_df, stats_cols=['chisqr', 'redchi', 'aic', 'bic']
     return stats_df
 
 
-# The covariance table
 def get_covar(fitobj_df):
+    """Converte the covariance matrices into an indexed dataframe.
+
+    Parameters
+    ----------
+    fitobj_df : dataframe
+        A dataframe containing minimizer objects.
+
+    Returns
+    -------
+    covar_df : dataframe
+        A dataframe containing indexed covariance matrices."""
 
     predict_list = list()
 
@@ -74,13 +113,15 @@ def get_covar(fitobj_df):
     
     covar_list = list()
     
+    # Iterate through each group, get the covariance matrix and put into 
+    # a dataframe
     for index in fitobj_df.index.values:        
         covar = fitobj_df.loc[index, 'fitobj'].covar
         
         index_array = pd.Index([index]*4, name=index_names)
 
+        # Handle the indexing of the matrix
         nrow,ncol = covar.shape
-
         row_index, col_index = np.unravel_index(list(range(nrow*ncol)), (nrow, ncol))
         
         covar_list.append(pd.DataFrame({'row':  row_index,

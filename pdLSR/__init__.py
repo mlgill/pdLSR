@@ -9,8 +9,8 @@ __version__ = VERSION
 
 
 # TODOs:
-# [ ] add docstrings
-# [ ] add .sortlevel(axis=0) to all tables?
-# [ ] plotting function?
-# [ ] function to copy demo notebook and data
 # [ ] make confidence interval calculation work without multithreading
+# [ ] add statsmodels and maybe scikit-learn functionality
+# [ ] add .sortlevel(axis=0) to all tables?
+# [ ] function to copy demo notebook and data for demo?
+# [ ] seaborn factgrid plotting function?

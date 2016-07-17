@@ -3,6 +3,26 @@ import pandas as pd
 
 # Loss function for error calculation
 def error_function(par, func, xdata, ydata=None, yerr=None):
+    """Calculate the error as the sum of square of residuals
+
+    Parameters
+    ----------
+    par : list
+        Parameter values.
+    func : function
+        Function being minimized.
+    xdata : array
+        The independent data
+    ydata : array
+        The dependent data [optional, will predict if omitted]
+    yerr : array
+        The error estimats [optional]
+
+    Returns
+    -------
+    data : array
+        Either the predicted value or the residuals squared
+        (with or without error weighting) are returned."""
     
     # The calculated value
     ycalc = func(par, xdata)
