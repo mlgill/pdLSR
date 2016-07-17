@@ -67,7 +67,7 @@ def get_confidence_interval(fitobj_df, mask, sigma, threads=None):
 
 
 # # Function to predict y-values based on fit parameters and an x-array
-# def predict(fit_data, groupcols, xtype='global', xnum=50, xcalc=None):
+# def predict(fit_data, groupby, xtype='global', xnum=50, xcalc=None):
     
 #     model = pd.DataFrame(index=fit_data.index)
 #     model['model_eq'] = fit_data.model_eq
@@ -91,7 +91,7 @@ def get_confidence_interval(fitobj_df, mask, sigma, threads=None):
 #     model['ycalc'] = model.reset_index().apply(lambda x: 
 #                                            tuple( x.model_eq(x.params, np.asarray(x.xcalc)) ), axis=1).tolist()
 
-#     predict = pd.concat([ expand_df(model.xcalc, 'xcalc', groupcols), 
-#                           expand_df(model.ycalc, 'ycalc', groupcols) ], axis=1)
+#     predict = pd.concat([ expand_df(model.xcalc, 'xcalc', groupby), 
+#                           expand_df(model.ycalc, 'ycalc', groupby) ], axis=1)
 
 #     return predict

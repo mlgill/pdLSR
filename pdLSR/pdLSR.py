@@ -9,7 +9,7 @@ from .auxiliary import convert_param_dict_to_df
 
 class pdLSR(object):
     
-    def __init__(self, data, model_eq, groupcols, params, 
+    def __init__(self, data, model_eq, groupby, params, 
                  xname, yname, yerr=None, 
                  method='leastsq', sigma=0.95, threads=None):
         
@@ -17,12 +17,12 @@ class pdLSR(object):
         data = data.reset_index()
 
         # Setup the groupby columns
-        # TODO check that groupcols are in the data, otherwise quit
-        if ( (not hasattr(groupcols, '__iter__')) | isinstance(groupcols, string_types) ):
-            groupcols = [groupcols]
+        # TODO check that groupby columns are in the data, otherwise quit
+        if ( (not hasattr(groupby, '__iter__')) | isinstance(groupby, string_types) ):
+            groupby = [groupby]
                 
-        self._groupcols = groupcols
-        self._ngroupcols = len(groupcols)
+        self._groupby = groupby
+        self._ngroupby = len(groupby)
         
         self._paramnames = [x['name'] for x in params]
 
@@ -40,13 +40,13 @@ class pdLSR(object):
         # Append the dataframe of data
         self.data = ( data
                      .reset_index()
-                     [self._groupcols + self._datacols]
-                     .set_index(self._groupcols)
+                     [self._groupby + self._datacols]
+                     .set_index(self._groupby)
                      )
 
         # Unique index information
-        index = ( data[self._groupcols + [xname]]
-                  .groupby(self._groupcols)
+        index = ( data[self._groupby + [xname]]
+                  .groupby(self._groupby)
                   .max()
                   .index
                  )
@@ -166,7 +166,7 @@ class pdLSR(object):
         # dof calculations for confidence intervals
         self.stats['nobs'] = ( self
                               .data
-                              .groupby(level=list(range(self._ngroupcols)))
+                              .groupby(level=list(range(self._ngroupby)))
                               .size()
                               )
         self.stats['npar'] = len(self._params_df.columns.levels[0])
@@ -214,7 +214,7 @@ class pdLSR(object):
     def pivot_covar(self):
         return (self
                 .covar
-                .groupby(level=list(range(self._ngroupcols)))
+                .groupby(level=list(range(self._ngroupby)))
                 .apply(lambda x: x.pivot(index='row',
                                          columns='col',
                                          values='covar'))

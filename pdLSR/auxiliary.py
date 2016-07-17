@@ -47,19 +47,19 @@ def convert_param_dict_to_df(params, ngroups, index):
 
 
 # # Function to expand arrays contained in a single dataframe row
-# def expand_df(data, name, groupcols):
+# def expand_df(data, name, groupby):
     
-#     if len(groupcols) == 1:
-#         groupcols = groupcols[0]
+#     if len(groupby) == 1:
+#         groupby = groupby[0]
     
 #     if isinstance(data, pd.DataFrame):
 #         dfexpand = pd.concat([pd.Series(np.array(x[1].values[0]), 
-#                                         index=pd.Index([x[0]]*len(x[1].values[0]), name=groupcols),
+#                                         index=pd.Index([x[0]]*len(x[1].values[0]), name=groupby),
 #                                         name=name) 
 #                               for x in data.iterrows()], axis=0)
 #     else:
 #         dfexpand = pd.concat([pd.Series(np.array(x[1]),
-#                                         index=pd.Index([x[0]]*len(x[1]), name=groupcols),
+#                                         index=pd.Index([x[0]]*len(x[1]), name=groupby),
 #                                         name=name) 
 #                               for x in data.iteritems()], axis=0)
         
