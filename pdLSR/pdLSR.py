@@ -4,7 +4,7 @@ from six import string_types
 
 from .fitting import get_minimizer, get_confidence_interval
 from .aggregation import get_results, get_stats, get_covar
-from .lmfit import lmfit_params
+from .lmfit_setup import lmfit_params
 
 
 class pdLSR(object):

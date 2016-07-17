@@ -5,10 +5,10 @@ about:
 
 package:
   name: pdlsr
-  version: '0.2.7'
+  version: '0.3.1'
 
 source:
-  git_tag: '0.2.7'
+  git_tag: '0.3.1'
   git_url: https://github.com/mlgill/pdLSR
 
 #  patches:
