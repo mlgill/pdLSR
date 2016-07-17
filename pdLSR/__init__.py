@@ -21,4 +21,3 @@ __version__ = VERSION
 # [ ] make confidence interval calculation work without multithreading
 # [ ] search for NaNs in model column and fill
 # [ ] make unrecognized parameter format throw an error and quit
-# [ ] compatibility with Python 3

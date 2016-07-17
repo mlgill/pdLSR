@@ -27,7 +27,7 @@ The following libraries are required for `pdLSR`:
 
 For plotting, `matplotlib` is required and `seaborn` is recommended. 
 
-`pdLSR` has currently only been tested with Python 2, but this is expected to change in the near future.
+`pdLSR` works with Python 2 and 3.
 
 ### Installation and Demo
 [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/mlgill/pdLSR)

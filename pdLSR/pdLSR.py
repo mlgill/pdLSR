@@ -166,7 +166,7 @@ class pdLSR(object):
         # dof calculations for confidence intervals
         self.stats['nobs'] = ( self
                               .data
-                              .groupby(level=range(self._ngroupcols))
+                              .groupby(level=list(range(self._ngroupcols)))
                               .size()
                               )
         self.stats['npar'] = len(self._params_df.columns.levels[0])
@@ -214,7 +214,7 @@ class pdLSR(object):
     def pivot_covar(self):
         return (self
                 .covar
-                .groupby(level=range(self._ngroupcols))
+                .groupby(level=list(range(self._ngroupcols)))
                 .apply(lambda x: x.pivot(index='row',
                                          columns='col',
                                          values='covar'))
