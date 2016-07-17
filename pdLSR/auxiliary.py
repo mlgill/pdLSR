@@ -18,7 +18,6 @@ def error_function(par, func, xdata, ydata=None, yerr=None):
         return (ycalc - ydata)**2/yerr**2
 
 
-
 def convert_param_dict_to_df(params, ngroups, index):
     ### CLEAN ###
 
@@ -45,39 +44,6 @@ def convert_param_dict_to_df(params, ngroups, index):
             params_df[(var[1],key)] = params[var[0]][key]
 
     return params_df
-
-
-
-# def convert_param_df_to_expanded_list(param_df):
-#     ### CLEAN ###
-
-#     # Convert each parameter entry to a list of dictionaries
-#     list_of_dicts = [ [ param_df.loc[x,y].to_dict() 
-#                         for y in param_df.columns.levels[0] ] 
-#                       for x in param_df.index ]
-
-#     # Convert the list of dictionaries to a list of lmfit parameters
-#     param_list = [ [ lmfit.Parameter(**r) 
-#                      for r in row ] 
-#                   for row in list_of_dicts ]
-
-#     return param_list
-
-
-# # Function to fix indexing for multiple groupcols
-# def fix_index(data, fit_data, groupcols, name):
-
-#     data.name = name
-#     data = pd.DataFrame(data)
-
-#     idx_data = fit_data.reset_index()[groupcols]
-
-#     for col in groupcols:
-#         data[col] = idx_data[col]
-
-#     data.set_index(groupcols, inplace=True)
-
-#     return data
 
 
 # # Function to expand arrays contained in a single dataframe row

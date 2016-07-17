@@ -3,14 +3,14 @@ import numpy as np
 from six import string_types
 
 from .fitting import get_minimizer, get_confidence_interval
-from .aggregation import get_results, get_stats
+from .aggregation import get_results, get_stats, get_covar
 from .auxiliary import convert_param_dict_to_df
 
 
 class pdLSR(object):
     
-    def __init__(self, data, model_eq=None, groupcols=None, params=None, 
-                 xname=None, yname=None, yerr=None, 
+    def __init__(self, data, model_eq, groupcols, params, 
+                 xname, yname, yerr=None, 
                  method='leastsq', sigma=0.95, threads=None):
         
         # Ensure the selected columns aren't in the index
@@ -18,9 +18,8 @@ class pdLSR(object):
 
         # Setup the groupby columns
         # TODO check that groupcols are in the data, otherwise quit
-        if groupcols is not None:
-            if ( (not hasattr(groupcols, '__iter__')) | isinstance(groupcols, string_types) ):
-                groupcols = [groupcols]
+        if ( (not hasattr(groupcols, '__iter__')) | isinstance(groupcols, string_types) ):
+            groupcols = [groupcols]
                 
         self._groupcols = groupcols
         self._ngroupcols = len(groupcols)
@@ -28,13 +27,14 @@ class pdLSR(object):
         self._paramnames = [x['name'] for x in params]
 
         # Dependent and independent variables
-        # TODO check that xname/yname/yerr are in the data, otherwise quit
+        # TODO check that xname/yname are in the data, otherwise quit
         self._xname = xname
         self._yname = yname
         self._yerr = yerr
 
         self._datacols = [xname, yname]
         if yerr is not None:
+            # TODO check that yerr is in the data, otherwise quit
             self._datacols += [yerr]
 
         # Append the dataframe of data
@@ -67,7 +67,7 @@ class pdLSR(object):
         # Dataframe to hold the fitting objects
         self._fitobj = pd.DataFrame(index=self._index)
         self._fitobj['model_eq'] = model_eq
-        # TODO search for NaNs in model column and fill
+        self._fitobj['model_eq'] = self._fitobj.model_eq.fillna(method='ffill')
         
         # Setup parameter dataframe
         self._params = params
@@ -199,9 +199,23 @@ class pdLSR(object):
                                  self.stats)
                        .sortlevel(axis=0)
                       )
+
+        # The covariance table
+        self.covar = get_covar(self._fitobj)
         
         return
+
 
     def predict(self, xcalc='global', xnum=10):
         self.model = self._predict(xcalc, xnum)
         return
+
+
+    def pivot_covar(self):
+        return (self
+                .covar
+                .groupby(level=range(self._ngroupcols))
+                .apply(lambda x: x.pivot(index='row',
+                                         columns='col',
+                                         values='covar'))
+                )

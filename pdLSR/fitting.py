@@ -40,7 +40,6 @@ def get_minimizer(index, fitobj_df, data_df, params_df,
     return pd.Series(minimizer, index=index, name='minimizer')
 
 
-
 def get_confidence_interval(fitobj_df, mask, sigma, threads=None):
 
     def _calc_ci(arr):

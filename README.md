@@ -25,10 +25,7 @@ The following libraries are required for `pdLSR`:
 
 [`multiprocess`](https://github.com/uqfoundation/multiprocess) is a fork of Python's `multiprocessing` library that provides more robust multithreading. I found that this library is required for multithreading to work with `pdLSR`. Both `multiprocess` and `lmfit` will install automatically from `pip` or `conda` (see below).
 
-For plotting, the following additional libraries are required:  
-
-* matplotlib
-* seaborn
+For plotting, `matplotlib` is required and `seaborn` is recommended. 
 
 `pdLSR` has currently only been tested with Python 2, but this is expected to change in the near future.
 
@@ -37,7 +34,7 @@ For plotting, the following additional libraries are required:
 
 The preferred method for installing `pdLSR` and all of its dependencies is to use the `conda` or `pip` package managers. 
 
-* For conda: `conda install -c mlgill pdnls` -- unfortunately conda seems to require lowercase names for packages
+* For conda: `conda install -c mlgill pdlsr` -- unfortunately conda seems to require lowercase names for packages
 * For pip: `pip install pdLSR`
 
 However it can also be installed manually by cloning the repo into your `PYTHONPATH`.  

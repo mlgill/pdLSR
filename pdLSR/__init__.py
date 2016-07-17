@@ -10,7 +10,6 @@ __version__ = VERSION
 
 # TODOs:
 # [ ] add docstrings
-# [ ] add common functions
 # [ ] add .sortlevel(axis=0) to all tables
 # [ ] plotting function?
 # [ ] function to copy demo notebook and data

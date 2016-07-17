@@ -55,7 +55,7 @@ def get_results(fitobj_df, params, sigma):
 
 
 # The stats table
-def get_stats(fitobj_df, stats_df, stats_cols=['chisqr', 'redchi', 'aic', 'bic', 'covar']):
+def get_stats(fitobj_df, stats_df, stats_cols=['chisqr', 'redchi', 'aic', 'bic']):
     
     for dat in stats_cols:
         lambda_str = 'lambda x: x.{}'.format(dat)
@@ -64,25 +64,26 @@ def get_stats(fitobj_df, stats_df, stats_cols=['chisqr', 'redchi', 'aic', 'bic',
     return stats_df
 
 
-# Table of the xdata, ydata, ycalc, and residuals
-# def get_data(fit_data, paramnames, groupcols):
+# The covariance table
+def get_covar(fitobj_df):
 
-#     # Index must be reset to avoid shape error with > 1 groupcol
-#     ycalc = fit_data.reset_index().apply(lambda x: tuple( x.model_eq([x.fitobj.params[par].value for par in paramnames], 
-#                                                           np.asarray(x.xdata)) 
-#                                                          ), axis=1)
+    predict_list = list()
 
-#     # ycalc.set_index(groupcols, inplace=True)
-#     ycalc = fix_index(ycalc, fit_data, groupcols, 'ycalc')
-
-#     # The residuals from lmfit are wrong, so calculate them below
-#     # resid = fit_data.fitobj.apply(lambda x: tuple( x.residual ))
-
-#     data = pd.concat([ expand_df(fit_data.xdata, 'xdata', groupcols),
-#                        expand_df(fit_data.ydata, 'ydata', groupcols),
-#                        expand_df(ycalc, 'ycalc', groupcols)
-#                      ], axis=1)
-
-#     data['residual'] = data.ydata - data.ycalc
+    index_names = fitobj_df.index.names
     
-#     return data
+    covar_list = list()
+    
+    for index in fitobj_df.index.values:        
+        covar = fitobj_df.loc[index, 'fitobj'].covar
+        
+        index_array = pd.Index([index]*4, name=index_names)
+        
+        covar_list.append(pd.DataFrame({'row':  [0,0,1,1],
+                                        'col':  [0,1,0,1],
+                                        'covar':covar.flatten()},
+                                       index=index_array,
+                                       columns=['row', 'col', 'covar']))
+        
+    return pd.concat(covar_list, axis=0)
+
+
