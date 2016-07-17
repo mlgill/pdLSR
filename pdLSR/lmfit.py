@@ -11,13 +11,13 @@ def lmfit_params(self, kwargs_input):
     if 'params' in kwargs.keys():
         self._params = kwargs['params']
     else:
-        print('params are a required input')
-        # TODO: quit with an error
-
+        raise AttributeError('"params" are a required input for the lmfit minimizer.')
 
     # Fitting and confidence interval methods
     self._method = kwargs['method']
-    # TODO check that method is leastsq, otherwise quit
+
+    if self._method is not 'leastsq':
+        raise NotImplementedError('The only lmfit minimization method currently implemented is leastsq.')
 
     self._sigma = kwargs['sigma']
 
@@ -25,9 +25,6 @@ def lmfit_params(self, kwargs_input):
         self._sigma = [self._sigma]
 
     self._threads = kwargs['threads']
-
-    # Setup parameter dataframe
-    self._paramnames = [x['name'] for x in self._params]
 
     if (isinstance(self._params, list) and isinstance(self._params[0], dict)):
         # params is a list of dictionaries
@@ -40,10 +37,12 @@ def lmfit_params(self, kwargs_input):
         params_df = self._params
         
     else:
-        # TODO make unrecognized parameter format throw an error and quit
-        print('Parameters should be either a list of dictionaries or a dataframe.')
+        raise AttributeError('Parameters should be either a list of dictionaries or a dataframe.')
         
     self._params_df = params_df.fillna(method='ffill')
+    
+    # Setup parameter dataframe
+    self._paramnames = [x['name'] for x in self._params]
 
     return self
 

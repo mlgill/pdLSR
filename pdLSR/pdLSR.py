@@ -19,23 +19,30 @@ class pdLSR(object):
         data = data.reset_index()
 
         # Setup the groupby columns
-        # TODO check that groupby columns are in the data, otherwise quit
         if ( (not hasattr(groupby, '__iter__')) | isinstance(groupby, string_types) ):
             groupby = [groupby]
+
+        for col in groupby:
+            if col not in data.columns:
+                raise IndexError('{} not in input data columns or index.'.format(col))
                 
         self._groupby = groupby
         self._ngroupby = len(groupby)
 
         # Dependent and independent variables
-        # TODO check that xname/yname are in the data, otherwise quit
         self._xname = xname
         self._yname = yname
         self._yerr = yerr
 
         self._datacols = [self._xname, self._yname]
-        if yerr is not None:
-            # TODO check that yerr is in the data, otherwise quit
-            self._datacols += [yerr]
+
+        if self._yerr is not None:
+            self._datacols += [self._yerr]
+
+        # Check that all columns are in the data
+        for col in self._datacols:
+            if col not in data.columns:
+                raise IndexError('{} not in input data columns or index.'.format(col))
 
         # Unique index information
         index = ( data[self._groupby + [self._xname]]
@@ -53,8 +60,7 @@ class pdLSR(object):
         if minimizer=='lmfit':
             self = lmfit_params(self, kwargs_input)
         else:
-            print('lmfit is currently the only minimizer implemented')
-            # TODO: quit with an error
+            raise NotImplementedError('The only minimizer currently implemented is lmfit.')
         
         # Append the dataframe of data
         self.data = ( data

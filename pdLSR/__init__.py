@@ -10,13 +10,7 @@ __version__ = VERSION
 
 # TODOs:
 # [ ] add docstrings
-# [ ] add .sortlevel(axis=0) to all tables
+# [ ] add .sortlevel(axis=0) to all tables?
 # [ ] plotting function?
 # [ ] function to copy demo notebook and data
-
-# [ ] check that groupcols are in the data, otherwise quit
-# [ ] check that xname/yname/yerr are in the data, otherwise quit
-# [ ] check that method is leastsq, otherwise quit
-
 # [ ] make confidence interval calculation work without multithreading
-# [ ] make unrecognized parameter format throw an error and quit
