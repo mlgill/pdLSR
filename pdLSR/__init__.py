@@ -19,5 +19,4 @@ __version__ = VERSION
 # [ ] check that method is leastsq, otherwise quit
 
 # [ ] make confidence interval calculation work without multithreading
-# [ ] search for NaNs in model column and fill
 # [ ] make unrecognized parameter format throw an error and quit

@@ -1,10 +1,8 @@
 # pdLSR: Pandas-aware least squares regression
 
-`pdLSR` is a Pandas-aware least squares minimization library.
-
 ## Overview
 
-`pdLSR` is a library for performing least squares minimization. It attempts to seamlessly incorporate this task in a Pandas-focused workflow. Input data are expected in dataframes, and multiple regressions can be performed using functionality similar to Pandas `groupby`. Results are returned as grouped dataframes and include best-fit parameters, statistics, residuals, and more. The results can be easily visualized using [`seaborn`](https://github.com/mwaskom/seaborn).
+`pdLSR` is a library for performing least squares regression. It attempts to seamlessly incorporate this task in a Pandas-focused workflow. Input data are expected in dataframes, and multiple regressions can be performed using functionality similar to Pandas `groupby`. Results are returned as grouped dataframes and include best-fit parameters, statistics, residuals, and more. The results can be easily visualized using [`seaborn`](https://github.com/mwaskom/seaborn).
 
 `pdLSR` currently utilizes [`lmfit`](https://github.com/lmfit/lmfit-py), a flexible and powerful library for least squares minimization, which in turn, makes use of `scipy.optimize.leastsq`. I began using `lmfit` because it is one of the few libraries that supports non-linear least squares regression, which is commonly used in the natural sciences. I also like the flexibility it offers for testing different modeling scenarios and the variety of assessment statistics it provides. However, I found myself writing many `for` loops to perform regressions on groups of data and aggregate the resulting output. Simplification of this task was my inspiration for writing `pdLSR`.
 
