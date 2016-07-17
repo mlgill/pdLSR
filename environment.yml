@@ -1,5 +1,5 @@
 # Running 'conda env create' in this directory will install necessary dependencies
-name: pdNLS
+name: pdLSR
 
 channels:
   - mlgill
