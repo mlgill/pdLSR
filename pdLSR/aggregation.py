@@ -29,37 +29,41 @@ def get_results(fitobj_df, params, sigma):
     
     # Get the confidence interval bound for each % ci entered
     mask = pd.notnull(fitobj_df.ciobj)
-    conf_intervals = pd.concat([fitobj_df.loc[mask, 'ciobj'].apply(lambda x: pd.Series({'{}_ci{:.2f}'.format(par_name, x[par_name][s][0]):
-                                                                                        x[par_name][s][1]}))
-                                for par_name in params 
-                                for s in range(len(sigma))
-                               ], axis=1)
 
-    # Combine results and fix column names
+    # Extract the confidence intervals as a dictionary
+    conf_intervals = pd.concat([fitobj_df.loc[mask, 'ciobj'].apply(lambda x: pd.Series({(par_name, val[1][0], val[0]):val[1][1] 
+                                                                                        for val in enumerate(x[par_name])}))
+                                for par_name in params], axis=1)
+
+    # Drop the 0.0 sigma value which is just the parameter value itself
+    conf_intervals = conf_intervals.loc[:, (slice(None), sigma)]
+
+    conf_intervals.sort_index(axis=1, inplace=True)
+
+    # Rename the integer level in preparation for joining to sigma value
+    max_val = conf_intervals.columns.get_level_values(-1).max()
+    mid_val = int((max_val+1)/2)
+    column_mapper = dict([(x,'lo') for x in range(mid_val)] + 
+                         [(x,'hi') for x in range(mid_val+1, max_val+1)])
+    conf_intervals = conf_intervals.rename_axis(column_mapper, axis=1)
+
+    # Set new indices
+    level_2 = ['ci{}_{}'.format(x,y) for x,y in 
+               zip(conf_intervals.columns.get_level_values(1), 
+                   conf_intervals.columns.get_level_values(2))]
+
+    ci_index = pd.MultiIndex.from_tuples(zip(conf_intervals.columns.get_level_values(0), level_2))
+
+    conf_intervals.columns = ci_index
+    
+    # Fix column names for parameters
+    colnames = [re.search(r"""([^_]+)_([^_]+)""", col) for col in parameters.columns]
+    parameters.columns = pd.MultiIndex.from_tuples([(col.group(1), col.group(2)) for col in colnames])
+
+    # Combine parameters and confidence intervals
     results = pd.merge(parameters, conf_intervals, left_index=True, right_index=True)
     
-    colnames = [re.search(r"""([^_]+)_([^_]+)""", col) for col in results.columns]
-    results.columns = pd.MultiIndex.from_tuples([(col.group(1), col.group(2)) for col in colnames])
-    
     results.sortlevel(axis=1, inplace=True)
-    
-    # Fix the confidence intervals so they are differences
-    # This requires slicing the data and dropping the last column
-    # index to get the broadcasing working
-    ci_cols = [x for x in results.columns.levels[-1] if 'ci' in x]
-
-    value_df = results.loc[:, (slice(None),['value'])]
-    value_df.columns = value_df.columns.droplevel(-1)
-
-    for ci in ci_cols:
-        ci_df = results.loc[:, (slice(None),[ci])]
-        ci_cols_orig = ci_df.columns
-        ci_df.columns = ci_df.columns.droplevel(-1)
-
-        ci_df = (value_df - ci_df).abs()
-        ci_df.columns = ci_cols_orig
-
-        results.loc[:, ci_df.columns] = ci_df
     
     results = (results
                .sortlevel(level=1, axis=1, ascending=False)
@@ -90,6 +94,8 @@ def get_stats(fitobj_df, stats_df, stats_cols=['chisqr', 'redchi', 'aic', 'bic']
     for dat in stats_cols:
         lambda_str = 'lambda x: x.{}'.format(dat)
         stats_df[dat] = fitobj_df.apply(eval(lambda_str))
+
+    stats_df = stats_df.rename(columns={'redchi':'r_chisqr'})
         
     return stats_df
 
