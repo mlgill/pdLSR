@@ -215,9 +215,14 @@ class pdLSR(object):
         self.stats = pd.DataFrame(index=self._index)
         
         # dof calculations for confidence intervals
+        groupby = list(range(self._ngroupby))
+
+        if len(groupby)==1:
+            groupby = groupby[0]
+
         self.stats['nobs'] = ( self
                               .data
-                              .groupby(level=list(range(self._ngroupby)))
+                              .groupby(level=groupby)
                               .size()
                               )
 
